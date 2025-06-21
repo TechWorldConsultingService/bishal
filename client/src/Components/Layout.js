@@ -1,10 +1,10 @@
 import React from 'react'
-import NavBarComponent from './NavBar'
+import NavbarComponent from './NavbarComponent'
 
 const Layout = ({children}) => {
   return (
     <div className='flex flex-col'>
-    <NavBarComponent />
+    <NavbarComponent />
     <div>
         {children}
     </div>
