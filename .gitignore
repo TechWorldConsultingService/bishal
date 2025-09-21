@@ -1,0 +1,94 @@
+# React (Create React App)
+# dependencies
+/node_modules
+
+# production
+/build
+
+# testing
+/coverage
+
+# environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# IDEs
+.idea/
+.vscode/
+.DS_Store
+
+# Django
+# Python
+*.pyc
+*.pyo
+*.pyd
+_pycache_/
+*.db
+*.sqlite3
+
+# Django migrations
+migrations/
+/migrations/
+!*/migrations/_init_.py
+*/migrations/*
+!/migrations
+!/migrations/_init_.py
+*/*/migrations
+
+#database
+db.sqlite3
+
+
+# environment variables
+.env
+.env.*
+
+# Pytest
+.pytest_cache/
+.coverage
+
+# log files
+*.log
+
+# static files
+/staticfiles/
+
+# Databases
+# MongoDB
+*.lock
+*.dump
+
+# PostgreSQL
+*.sql
+*.pgsql
+*.backup
+
+# SQLite
+*.sqlite3
+*.db
+*.db-journal
+
+#env
+env/
+.venv/
+venv/
+
+frontendcopy
+vite-project
+
+src_legacy
+frontendcopy
+testfrontend
+dist/
+/package.json
+/.vscode
