@@ -21,4 +21,4 @@ class IsStaffOrAdminOrReadOnly(BasePermission):
             return True
 
         # For other methods, check if user is staff/admin
-        return request.user and request.user.is_authenticated and request.user.is_staff
+        return request.user and request.user.is_authenticated and request.user.is_staff or request.user.role == "staff"
