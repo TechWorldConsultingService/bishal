@@ -28,6 +28,7 @@ const products = [
     name: "Battery 1",
     price: "Rs. 8,500",
     category: "Battery",
+    subcategory: "Exide",
     image: batteryImg1,
   },
   {
@@ -35,6 +36,7 @@ const products = [
     name: "Battery 2",
     price: "Rs. 8,700",
     category: "Battery",
+    subcategory: "Tata Green",
     image: batteryImg2,
   },
   {
@@ -42,6 +44,7 @@ const products = [
     name: "Battery 3",
     price: "Rs. 9,000",
     category: "Battery",
+    subcategory: "ADDO",
     image: batteryImg3,
   },
   {
@@ -49,6 +52,7 @@ const products = [
     name: "Battery 4",
     price: "Rs. 8,200",
     category: "Battery",
+    subcategory: "LivGuard",
     image: batteryImg4,
   },
   {
@@ -160,16 +164,32 @@ const products = [
 
 function ProductList({ showSeeMore = false }) {
   const [category, setCategory] = useState("All");
+  const [subcategory, setSubcategory] = useState("All");
   const [search, setSearch] = useState("");
 
   // Generate unique categories + All
   const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-  // Filter products based on selected category
-  let filteredProducts =
-    category === "All"
-      ? products
-      : products.filter((p) => p.category === category);
+  // Battery subcategories
+  const batterySubcategories = [
+    "All",
+    "Exide",
+    "Tata Green",
+    "ADDO",
+    "LivGuard",
+    "Eastman",
+  ];
+
+  // Filter products based on selected category and subcategory
+  let filteredProducts = products;
+  if (category !== "All") {
+    filteredProducts = filteredProducts.filter((p) => p.category === category);
+    if (category === "Battery" && subcategory !== "All") {
+      filteredProducts = filteredProducts.filter(
+        (p) => p.subcategory === subcategory
+      );
+    }
+  }
 
   // Filter by search (only on Products page)
   if (!showSeeMore && search.trim()) {
@@ -227,11 +247,14 @@ function ProductList({ showSeeMore = false }) {
       )}
 
       {/* Category Buttons with improved styling */}
-      <div className="flex justify-center gap-3 mb-10 flex-wrap">
+      <div className="flex justify-center gap-3 mb-4 flex-wrap">
         {categories.map((cat) => (
           <button
             key={cat}
-            onClick={() => setCategory(cat)}
+            onClick={() => {
+              setCategory(cat);
+              setSubcategory("All"); // Reset subcategory when changing category
+            }}
             className={`px-5 py-2.5 rounded-full font-medium transition-all duration-300 ${
               category === cat
                 ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
@@ -243,8 +266,27 @@ function ProductList({ showSeeMore = false }) {
         ))}
       </div>
 
+      {/* Battery Subcategory Buttons */}
+      {category === "Battery" && (
+        <div className="flex justify-center gap-2 mb-8 flex-wrap">
+          {batterySubcategories.map((subcat) => (
+            <button
+              key={subcat}
+              onClick={() => setSubcategory(subcat)}
+              className={`px-4 py-1.5 rounded-full font-medium transition-all duration-300 text-sm ${
+                subcategory === subcat
+                  ? "bg-blue-500 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
+              }`}
+            >
+              {subcat}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Product Grid with improved styling */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10">
         {filteredProducts.map((product) => (
           <div
             key={product.id}
@@ -267,20 +309,20 @@ function ProductList({ showSeeMore = false }) {
               </h3>
               <p className="text-blue-600 font-bold">{product.price}</p>
 
-              <div className="flex justify-between gap-2 mt-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 mt-4">
                 <a
                   href="tel:9763258057"
-                  className="flex-1 flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-2.5 rounded-lg shadow-sm hover:bg-blue-600 transition-all duration-300 group"
+                  className="w-full sm:flex-1 flex items-center justify-center gap-1 bg-blue-500 text-white px-2 py-2 text-xs rounded-lg shadow-sm hover:bg-blue-600 transition-all duration-300 group sm:px-4 sm:py-2.5 sm:text-sm"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"
-                    className="w-5 h-5 group-hover:animate-bounce"
+                    className="w-4 h-4 sm:w-5 sm:h-5 group-hover:animate-bounce"
                   >
                     <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.21.49 2.53.76 3.88.76a1 1 0 011 1v3.5a1 1 0 01-1 1C7.61 22 2 16.39 2 9.5a1 1 0 011-1H6.5a1 1 0 011 1c0 1.35.27 2.67.76 3.88a1 1 0 01-.21 1.11l-2.2 2.2z" />
                   </svg>
-                  <span className="inline-flex items-center gap-1 text-sm">
+                  <span className="inline-flex items-center gap-1 text-xs sm:text-sm text-center">
                     Call
                   </span>
                 </a>
@@ -288,19 +330,19 @@ function ProductList({ showSeeMore = false }) {
                   href={`https://wa.me/9779763258057?text=Hello%20Bishal%20Traders,%20I%20am%20interested%20in%20${product.name}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-2.5 rounded-lg shadow-sm hover:bg-green-600 transition-all duration-300 group"
+                  className="w-full sm:flex-1 flex items-center justify-center gap-1 bg-green-500 text-white px-2 py-2 text-xs rounded-lg shadow-sm hover:bg-green-600 transition-all duration-300 group sm:px-4 sm:py-2.5 sm:text-sm"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 32 32"
-                    className="w-5 h-5 group-hover:animate-bounce"
+                    className="w-4 h-4 sm:w-5 sm:h-5 group-hover:animate-bounce"
                   >
                     <path
                       fill="#fff"
-                      d="M16 3C9.373 3 4 8.373 4 15c0 2.637.813 5.13 2.352 7.267L4 29l7.012-2.293A12.93 12.93 0 0016 27c6.627 0 12-5.373 12-12S22.627 3 16 3zm0 22c-1.98 0-3.91-.58-5.563-1.68l-.397-.25-4.162 1.36 1.36-4.06-.26-.41A9.97 9.97 0 016 15c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10zm5.13-7.47c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.13-.61.14-.18.27-.7.9-.86 1.09-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.19.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.61-.47-.16-.01-.35-.01-.54-.01-.19 0-.5.07-.76.36-.26.29-1 1-.97 2.43.03 1.43.98 2.81 1.12 3 .14.19 2.09 3.2 5.08 4.36.71.25 1.26.4 1.69.51.71.18 1.36.16 1.87.1.57-.07 1.65-.67 1.89-1.32.23-.65.23-1.21.16-1.32-.07-.11-.25-.18-.53-.32z"
+                      d="M16 3C9.373 3 4 8.373 4 15c0 2.637.813 5.13 2.352 7.267L4 29l7.012-2.293A12.93 12.93 0 0016 27c6.627 0 12-5.373 12-12S22.627 3 16 3zm0 22c-1.98 0-3.91-.58-5.563-1.68l-.397-.25-4.162 1.36 1.36-4.06-.26-.41A9.97 9.97 0 016 15c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10zm5.13-7.47c-.28-.14-1.65-.81-1.9-.9-.25-.09-.43-.13-.61.14-.18.27-.7.9-.86 1.09-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.4-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.29.28-.48.09-.19.05-.36-.02-.5-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.61-.47-.16-.01-.35-.01-.54-.01-.19 0-.5.07-.76.36-.26.29-1 1-.97 2.43.03 1.43.98 2.81 1.12 3 .14.19 2.09 3.20 5.08 4.36.71.25 1.26.40 1.69.51.71.18 1.36.16 1.87.10.57-.07 1.65-.67 1.89-1.32.23-.65.23-1.21.16-1.32-.07-.11-.25-.18-.53-.32z"
                     />
                   </svg>
-                  <span className="inline-flex items-center gap-1 text-sm">
+                  <span className="inline-flex items-center gap-1 text-xs sm:text-sm text-center">
                     WhatsApp
                   </span>
                 </a>

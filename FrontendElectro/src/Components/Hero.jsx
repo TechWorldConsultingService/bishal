@@ -5,32 +5,32 @@ import logoImg from "../assets/logo.jpg";
 
 function Hero() {
   return (
-    <section className="relative py-10 overflow-hidden">
+    <section className="relative py-2 md:py-10 overflow-hidden">
       {/* Background with gradient and subtle pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 opacity-90"></div>
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48ZyBmaWxsPSJub25lIiBzdHJva2U9IiMwMDc3ZmYiIHN0cm9rZS13aWR0aD0iMC41IiBzdHJva2Utb3BhY2l0eT0iMC4yIj48cGF0aCBkPSJNIDAgMCBMIDYwIDYwIE0gNjAgMCBMIDAgNjAiLz48L2c+PC9zdmc+')] opacity-20"></div>
 
       <div className="container mx-auto text-center px-4 relative z-10">
         {/* Shop Name with enhanced styling */}
-        <div className="inline-block p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6 shadow-2xl">
-          <div className="bg-white p-3 rounded-full flex items-center justify-center">
+        <div className="inline-block p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-3 md:mb-6 shadow-2xl">
+          <div className="bg-white p-2 md:p-3 rounded-full flex items-center justify-center">
             <img
               src={logoImg}
               alt="Logo"
-              className="h-36 w-36 rounded-full shadow-2xl border-4 border-blue-500 transition-transform duration-500 hover:scale-110"
+              className="h-28 w-28 md:h-36 md:w-36 rounded-full shadow-2xl border-4 border-blue-500 transition-transform duration-500 hover:scale-110"
             />
           </div>
         </div>
 
-        <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-700 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl md:text-6xl font-bold bg-gradient-to-r from-blue-700 to-purple-600 bg-clip-text text-transparent mt-2 mb-1 md:mt-0 md:mb-2">
           Bishal Traders
         </h1>
 
         {/* Address with improved styling */}
-        <div className="mt-4 flex justify-center items-center">
+        <div className="mt-1 md:mt-4 flex justify-center items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-blue-500 mr-2"
+            className="h-4 w-4 md:h-5 md:w-5 text-blue-500 mr-1 md:mr-2"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -48,37 +48,37 @@ function Hero() {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <p className="text-lg text-gray-600 font-medium">
+          <p className="text-sm md:text-lg text-gray-600 font-medium">
             NewRoad, Narayangarh, Chitwan
           </p>
         </div>
 
         {/* Tagline with improved styling */}
-        <p className="mt-4 text-xl text-gray-700 font-medium bg-blue-50 inline-block px-4 py-2 rounded-full border border-blue-100">
+        <p className="mt-2 md:mt-4 text-base md:text-xl text-gray-700 font-medium bg-blue-50 inline-block px-3 py-1 md:px-4 md:py-2 rounded-full border border-blue-100">
           Your trusted Auto Electric Partner ⚡
         </p>
 
         {/* Call-to-action button with enhanced styling */}
-        <div className="mt-8">
+        <div className="mt-3 md:mt-8">
           <Link
             to="/products"
-            className="inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition-all text-lg transform hover:scale-110 duration-300"
+            className="inline-flex items-center justify-center px-4 py-2 md:px-8 md:py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition-all text-base md:text-lg transform hover:scale-105 duration-300"
           >
             Explore Products
           </Link>
         </div>
 
         {/* Contact Buttons */}
-        <div className="mt-8 flex justify-center gap-6">
+        <div className="mt-3 md:mt-8 flex justify-center gap-3 md:gap-6">
           <a
             href="tel:9763258057"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition-all text-lg transform hover:scale-110 duration-300"
+            className="inline-flex items-center gap-1 md:gap-2 px-3 py-2 md:px-6 md:py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition-all text-sm md:text-lg transform hover:scale-105 duration-300"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="w-6 h-6"
+              className="w-4 h-4 md:w-6 md:h-6"
             >
               <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.21.49 2.53.76 3.88.76a1 1 0 011 1v3.5a1 1 0 01-1 1C7.61 22 2 16.39 2 9.5a1 1 0 011-1H6.5a1 1 0 011 1c0 1.35.27 2.67.76 3.88a1 1 0 01-.21 1.11l-2.2 2.2z" />
             </svg>
@@ -88,12 +88,12 @@ function Hero() {
             href="https://wa.me/9779763258057?text=Hello%20Bishal%20Traders,%20I%20am%20interested%20in%20your%20products"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white font-semibold rounded-full shadow-lg hover:bg-green-600 transition-all text-lg transform hover:scale-110 duration-300"
+            className="inline-flex items-center gap-1 md:gap-2 px-3 py-2 md:px-6 md:py-3 bg-green-500 text-white font-semibold rounded-full shadow-lg hover:bg-green-600 transition-all text-sm md:text-lg transform hover:scale-105 duration-300"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 32 32"
-              className="w-6 h-6"
+              className="w-4 h-4 md:w-6 md:h-6"
             >
               <path
                 fill="#fff"

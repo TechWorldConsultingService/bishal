@@ -98,11 +98,6 @@ function Footer() {
                   Products
                 </a>
               </li>
-              <li>
-                <a href="/contact" className="hover:text-blue-400 transition">
-                  Contact
-                </a>
-              </li>
             </ul>
           </div>
 

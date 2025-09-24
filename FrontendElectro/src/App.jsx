@@ -21,6 +21,20 @@ function App() {
         }
       />
       <Route path="/products" element={<Products />} />
+      <Route
+        path="*"
+        element={
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "3rem",
+              fontSize: "1.5rem",
+            }}
+          >
+            404 Not Found
+          </div>
+        }
+      />
     </Routes>
   );
 }
