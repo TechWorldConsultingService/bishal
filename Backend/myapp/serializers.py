@@ -51,11 +51,12 @@ class ProductSerializer(serializers.ModelSerializer):
     brand_id = serializers.PrimaryKeyRelatedField(
         queryset=Brand.objects.all(), source='brand', write_only=True, required=False, allow_null=True
     )
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'description', 'price', 'stock',
+            'id', 'name', 'description', 'price', 'stock', 'image',
             'category', 'category_id',
             'subcategory', 'subcategory_id',
             'brand', 'brand_id',
