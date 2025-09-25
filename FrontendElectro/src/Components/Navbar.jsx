@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import logoImg from "../assets/logo.jpg";
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isAuthenticated = useSelector((s) => s.auth.isAuthenticated);
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-blue-100">
       <div className="container mx-auto flex justify-between items-center p-4">
@@ -35,6 +37,15 @@ function Navbar() {
             Products
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 group-hover:w-full"></span>
           </Link>
+          {isAuthenticated && (
+            <Link
+              to="/admin"
+              className="relative hover:text-blue-600 transition-all duration-300 group"
+            >
+              Dashboard
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+          )}
         </nav>
 
         {/* Enhanced Mobile Menu */}
@@ -65,6 +76,15 @@ function Navbar() {
             >
               Products
             </Link>
+            {isAuthenticated && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="hover:text-blue-600"
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
         </div>
       )}

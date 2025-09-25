@@ -1,207 +1,108 @@
 // src/components/ProductList.jsx
 import React from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import batteryImg1 from "../assets/battery.jpg";
-import batteryImg2 from "../assets/battery2.jpg";
-import batteryImg3 from "../assets/battery3.jpg";
-import batteryImg4 from "../assets/battery4.jpg";
-import lightImg1 from "../assets/light.jpg";
-import lightImg2 from "../assets/light1.jpg";
-import lightImg3 from "../assets/light2.jpg";
-import lightImg4 from "../assets/light3.jpg";
-import starterMotorImg1 from "../assets/starter_motor.jpg";
-import starterMotorImg2 from "../assets/starter_motor2.jpg";
-import starterMotorImg3 from "../assets/starter_motor3.jpg";
-import upsImg1 from "../assets/ups.jpg";
-import upsImg2 from "../assets/ups2.jpg";
-import alternatorMotorImg1 from "../assets/alternator_motor.jpg";
-import alternatorMotorImg2 from "../assets/alternator_motor1.jpg";
-import alternatorMotorImg3 from "../assets/alternator_motor2.jpg";
-import invertorImg1 from "../assets/Invertor.jpg";
-import invertorImg2 from "../assets/Invertor2.jpg";
-import wiperImg from "../assets/wiper.jpg";
 
-// Sample product data (19 products)
-const products = [
-  {
-    id: 1,
-    name: "Battery 1",
-    price: "Rs. 8,500",
-    category: "Battery",
-    subcategory: "Exide",
-    image: batteryImg1,
-  },
-  {
-    id: 2,
-    name: "Battery 2",
-    price: "Rs. 8,700",
-    category: "Battery",
-    subcategory: "Tata Green",
-    image: batteryImg2,
-  },
-  {
-    id: 3,
-    name: "Battery 3",
-    price: "Rs. 9,000",
-    category: "Battery",
-    subcategory: "ADDO",
-    image: batteryImg3,
-  },
-  {
-    id: 4,
-    name: "Battery 4",
-    price: "Rs. 8,200",
-    category: "Battery",
-    subcategory: "LivGuard",
-    image: batteryImg4,
-  },
-  {
-    id: 5,
-    name: "Light 1",
-    price: "Rs. 2,000",
-    category: "Lights",
-    image: lightImg1,
-  },
-  {
-    id: 6,
-    name: "Light 2",
-    price: "Rs. 2,200",
-    category: "Lights",
-    image: lightImg2,
-  },
-  {
-    id: 7,
-    name: "Light 3",
-    price: "Rs. 2,500",
-    category: "Lights",
-    image: lightImg3,
-  },
-  {
-    id: 8,
-    name: "Light 4",
-    price: "Rs. 1,800",
-    category: "Lights",
-    image: lightImg4,
-  },
-  {
-    id: 9,
-    name: "Starter Motor 1",
-    price: "Rs. 5,500",
-    category: "Starter Motor",
-    image: starterMotorImg1,
-  },
-  {
-    id: 10,
-    name: "Starter Motor 2",
-    price: "Rs. 5,700",
-    category: "Starter Motor",
-    image: starterMotorImg2,
-  },
-  {
-    id: 11,
-    name: "Starter Motor 3",
-    price: "Rs. 6,000",
-    category: "Starter Motor",
-    image: starterMotorImg3,
-  },
-  {
-    id: 12,
-    name: "Alternator Motor 1",
-    price: "Rs. 6,000",
-    category: "Altenator Motor",
-    image: alternatorMotorImg1,
-  },
-  {
-    id: 13,
-    name: "Alternator Motor 2",
-    price: "Rs. 6,200",
-    category: "Altenator Motor",
-    image: alternatorMotorImg2,
-  },
-  {
-    id: 14,
-    name: "Alternator Motor 3",
-    price: "Rs. 6,500",
-    category: "Altenator Motor",
-    image: alternatorMotorImg3,
-  },
-  {
-    id: 15,
-    name: "UPS 1",
-    price: "Rs. 4,000",
-    category: "UPS",
-    image: upsImg1,
-  },
-  {
-    id: 16,
-    name: "UPS 2",
-    price: "Rs. 4,200",
-    category: "UPS",
-    image: upsImg2,
-  },
-  {
-    id: 17,
-    name: "Invertor 1",
-    price: "Rs. 5,000",
-    category: "Inverter",
-    image: invertorImg1,
-  },
-  {
-    id: 18,
-    name: "Invertor 2",
-    price: "Rs. 5,200",
-    category: "Inverter",
-    image: invertorImg2,
-  },
-  {
-    id: 19,
-    name: "Wiper",
-    price: "Rs. 1,000",
-    category: "Other",
-    image: wiperImg,
-  },
-];
+const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 function ProductList({ showSeeMore = false }) {
-  const [category, setCategory] = useState("All");
-  const [subcategory, setSubcategory] = useState("All");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("All");
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState("All");
   const [search, setSearch] = useState("");
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Generate unique categories + All
-  const categories = ["All", ...new Set(products.map((p) => p.category))];
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError("");
+        const [prodRes, catRes] = await Promise.all([
+          fetch(`${BACKEND_BASE_URL}/api/products/`),
+          fetch(`${BACKEND_BASE_URL}/api/categories/`),
+        ]);
+        if (!prodRes.ok) throw new Error("Failed to load products");
+        if (!catRes.ok) throw new Error("Failed to load categories");
+        const prodJson = await prodRes.json();
+        const catJson = await catRes.json();
 
-  // Battery subcategories
-  const batterySubcategories = [
-    "All",
-    "Exide",
-    "Tata Green",
-    "ADDO",
-    "LivGuard",
-    "Eastman",
-  ];
+        if (!Array.isArray(prodJson)) {
+          throw new Error("Unexpected products response");
+        }
+        const normalizedProducts = prodJson.map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price || 0),
+          categoryId: p.category?.id ?? null,
+          categoryName: p.category?.name || "Uncategorized",
+          subcategoryId: p.subcategory?.id ?? null,
+          subcategoryName: p.subcategory?.name || null,
+          image: p.image || null,
+        }));
 
-  // Filter products based on selected category and subcategory
-  let filteredProducts = products;
-  if (category !== "All") {
-    filteredProducts = filteredProducts.filter((p) => p.category === category);
-    if (category === "Battery" && subcategory !== "All") {
-      filteredProducts = filteredProducts.filter(
-        (p) => p.subcategory === subcategory
-      );
+        if (isMounted) {
+          setProducts(normalizedProducts);
+          setCategories(catJson);
+        }
+      } catch (e) {
+        if (isMounted) setError(e.message || "Something went wrong");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
-  }
+    fetchData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  // Filter by search (only on Products page)
-  if (!showSeeMore && search.trim()) {
-    filteredProducts = filteredProducts.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchSubcategories() {
+      if (selectedCategoryId === "All") {
+        setSubcategories([]);
+        setSelectedSubcategoryId("All");
+        return;
+      }
+      try {
+        const res = await fetch(`${BACKEND_BASE_URL}/api/categories/${selectedCategoryId}/subcategories/`);
+        if (!res.ok) throw new Error("Failed to load subcategories");
+        const data = await res.json();
+        if (isMounted) {
+          setSubcategories(data);
+          setSelectedSubcategoryId("All");
+        }
+      } catch {
+        if (isMounted) setSubcategories([]);
+      }
+    }
+    fetchSubcategories();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCategoryId]);
 
-  // Show only 8 products in preview (homepage)
-  if (showSeeMore) {
-    filteredProducts = filteredProducts.slice(0, 8);
-  }
+  const filteredProducts = useMemo(() => {
+    let list = products;
+    if (selectedCategoryId !== "All") {
+      list = list.filter((p) => p.categoryId === selectedCategoryId);
+    }
+    if (selectedSubcategoryId !== "All") {
+      list = list.filter((p) => p.subcategoryId === selectedSubcategoryId);
+    }
+    if (!showSeeMore && search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    if (showSeeMore) {
+      list = list.slice(0, 8);
+    }
+    return list;
+  }, [products, selectedCategoryId, selectedSubcategoryId, search, showSeeMore]);
 
   return (
     <section className="py-16 container mx-auto px-4">
@@ -246,28 +147,43 @@ function ProductList({ showSeeMore = false }) {
         </div>
       )}
 
-      {/* Category Buttons with improved styling */}
-      <div className="flex justify-center gap-3 mb-4 flex-wrap">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => {
-              setCategory(cat);
-              setSubcategory("All"); // Reset subcategory when changing category
-            }}
-            className={`px-5 py-2.5 rounded-full font-medium transition-all duration-300 ${
-              category === cat
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
-            }`}
+      {/* Loading / Error */}
+      {loading && (
+        <div className="text-center text-gray-600 mb-8">Loading products...</div>
+      )}
+      {error && (
+        <div className="text-center text-red-600 mb-8">{error}</div>
+      )}
+
+      {/* Category & Subcategory Filters */}
+      <div className="flex justify-center gap-3 mb-10 flex-wrap">
+        <select
+          value={selectedCategoryId}
+          onChange={(e) => setSelectedCategoryId(e.target.value === "All" ? "All" : Number(e.target.value))}
+          className="px-5 py-2.5 rounded-full font-medium transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
+        >
+          <option value="All">All Categories</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
+
+        {selectedCategoryId !== "All" && (
+          <select
+            value={selectedSubcategoryId}
+            onChange={(e) => setSelectedSubcategoryId(e.target.value === "All" ? "All" : Number(e.target.value))}
+            className="px-5 py-2.5 rounded-full font-medium transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
           >
-            {cat}
-          </button>
-        ))}
+            <option value="All">All Subcategories</option>
+            {subcategories.map((sub) => (
+              <option key={sub.id} value={sub.id}>{sub.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Battery Subcategory Buttons */}
-      {category === "Battery" && (
+      {/* {category === "Battery" && (
         <div className="flex justify-center gap-2 mb-8 flex-wrap">
           {batterySubcategories.map((subcat) => (
             <button
@@ -283,10 +199,10 @@ function ProductList({ showSeeMore = false }) {
             </button>
           ))}
         </div>
-      )}
+      )} */}
 
       {/* Product Grid with improved styling */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
         {filteredProducts.map((product) => (
           <div
             key={product.id}
@@ -294,12 +210,12 @@ function ProductList({ showSeeMore = false }) {
           >
             <div className="relative overflow-hidden">
               <img
-                src={product.image}
+                src={product.image || batteryImg1}
                 alt={product.name}
                 className="w-full h-48 object-cover transition-transform duration-500 hover:scale-105"
               />
               <div className="absolute top-3 right-3 bg-white rounded-lg shadow-sm px-2 py-1 text-xs font-semibold text-blue-600">
-                {product.category}
+                {product.categoryName}
               </div>
             </div>
 
@@ -307,7 +223,7 @@ function ProductList({ showSeeMore = false }) {
               <h3 className="text-lg font-semibold text-gray-800 mb-1">
                 {product.name}
               </h3>
-              <p className="text-blue-600 font-bold">{product.price}</p>
+              <p className="text-blue-600 font-bold">Rs. {Number(product.price).toLocaleString()}</p>
 
               <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 mt-4">
                 <a
