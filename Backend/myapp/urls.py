@@ -3,15 +3,21 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
-from .views import LoginAPIView
 from .views import *
+from rest_framework.routers import DefaultRouter
+
+
+router = DefaultRouter()
+router.register('shops', ShopViewSet)
+router.register('hero-banners', HeroSectionBannerViewSet)
+router.register('ad-banners', AdBannerViewSet)
 
 urlpatterns = [
+    path('api/', include(router.urls)),
     path('api/login/', LoginAPIView.as_view(), name='api-login'),
     # path('api/logout/', LogoutAPIView.as_view(), name='api-logout'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    
     # Product URLs
     path('api/products/', ProductListView.as_view(), name='product-list'),
     path('api/products/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),

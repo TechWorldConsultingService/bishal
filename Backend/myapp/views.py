@@ -44,9 +44,28 @@ class LoginAPIView(APIView):
 
 
 
-from rest_framework import generics, permissions
-from .models import Product, Category, SubCategory, Brand
-from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer, BrandSerializer
+from rest_framework import generics, permissions, viewsets
+from .models import Product, Category, SubCategory, Brand, Shop, HeroSectionBanner, AdBanner
+from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer, BrandSerializer, ShopSerializer, HeroSectionBannerSerializer, AdBannerSerializer
+from .permissions import IsSuperUserOrReadOnly
+
+
+
+class ShopViewSet(viewsets.ModelViewSet):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    permission_classes = [IsSuperUserOrReadOnly]
+
+class HeroSectionBannerViewSet(viewsets.ModelViewSet):
+    queryset = HeroSectionBanner.objects.all()
+    serializer_class = HeroSectionBannerSerializer
+    permission_classes = [IsSuperUserOrReadOnly]
+
+class AdBannerViewSet(viewsets.ModelViewSet):
+    queryset = AdBanner.objects.all()
+    serializer_class = AdBannerSerializer
+    permission_classes = [IsSuperUserOrReadOnly]
+
 
 # Product Views
 class ProductListView(generics.ListAPIView):
@@ -93,9 +112,6 @@ class BrandListView(generics.ListCreateAPIView):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-
-
 
 # Get all subcategories of a category
 class SubCategoryByCategoryView(generics.ListAPIView):

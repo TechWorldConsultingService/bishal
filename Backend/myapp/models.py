@@ -34,6 +34,40 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
 
+# .................... SHop DETAIL....................................
+class Shop(models.Model):
+    name    = models.CharField(max_length=250, unique=True)
+    address = models.CharField(max_length=250, null=True, blank=True)
+    p_num = models.CharField(max_length=15)
+    s_num = models.CharField(max_length=15,null=True, blank=True)
+    logo = models.ImageField(upload_to="logo/", null=True, blank=True)
+    whatsapp = models.CharField(max_length=15)
+    facebook = models.URLField(null=True, blank=True)
+    instagram = models.URLField(null=True, blank=True)
+    twitter = models.URLField(null=True, blank=True)
+    youtube = models.URLField(null=True, blank=True)
+    tiktok = models.URLField(null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class HeroSectionBanner(models.Model):
+    title = models.CharField(max_length=250, null=True, blank=True)
+    subtitle = models.CharField(max_length=250,null=True, blank=True)
+    image = models.ImageField(upload_to="HeroSectionBanner/", null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+class AdBanner(models.Model):
+    image = models.ImageField(upload_to="AdBanner/", null=True, blank=True)
+
+    def __str__(self):
+        return self.image
+
+
 # .................... SHOP PRODUCT DETAIL....................................
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
