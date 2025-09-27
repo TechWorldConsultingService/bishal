@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Category, SubCategory, Brand, Product, CustomUser
+from .models import Category, SubCategory, Brand, Product, CustomUser, Shop, HeroSectionBanner, AdBanner
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -12,6 +13,30 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'role']
+
+
+class ShopSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+    class Meta:
+        model = Shop
+        fields = '__all__'
+
+    def get_logo(self, obj):
+        request = self.context.get('request')
+        if obj.logo and request:
+            return request.build_absolute_uri(obj.logo.url)
+        return None
+
+class HeroSectionBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeroSectionBanner
+        fields = '__all__'
+
+class AdBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdBanner
+        fields = '__all__'
+
 
 
 # ....................... PRODUCT SERIALIZERS  .........................................
