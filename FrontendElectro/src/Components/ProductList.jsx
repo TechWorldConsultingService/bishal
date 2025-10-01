@@ -1,11 +1,14 @@
 // src/components/ProductList.jsx
 import React from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import batteryImg1 from "../assets/battery.jpg";
 
 const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 function ProductList({ showSeeMore = false }) {
+  const { isAuthenticated, accessToken } = useSelector((state) => state.auth);
+  
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState("All");
   const [search, setSearch] = useState("");
@@ -14,6 +17,24 @@ function ProductList({ showSeeMore = false }) {
   const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // Edit/Delete states
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [deletingProduct, setDeletingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category_id: "",
+    subcategory_id: "",
+    brand_id: "",
+    image: null
+  });
+  const [brands, setBrands] = useState([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editSubcategories, setEditSubcategories] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -21,14 +42,17 @@ function ProductList({ showSeeMore = false }) {
       try {
         setLoading(true);
         setError("");
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, brandRes] = await Promise.all([
           fetch(`${BACKEND_BASE_URL}/api/products/`),
           fetch(`${BACKEND_BASE_URL}/api/categories/`),
+          fetch(`${BACKEND_BASE_URL}/api/brands/`),
         ]);
         if (!prodRes.ok) throw new Error("Failed to load products");
         if (!catRes.ok) throw new Error("Failed to load categories");
+        if (!brandRes.ok) throw new Error("Failed to load brands");
         const prodJson = await prodRes.json();
         const catJson = await catRes.json();
+        const brandJson = await brandRes.json();
 
         if (!Array.isArray(prodJson)) {
           throw new Error("Unexpected products response");
@@ -36,17 +60,22 @@ function ProductList({ showSeeMore = false }) {
         const normalizedProducts = prodJson.map((p) => ({
           id: p.id,
           name: p.name,
+          description: p.description || "",
           price: Number(p.price || 0),
+          stock: p.stock || 0,
           categoryId: p.category?.id ?? null,
           categoryName: p.category?.name || "Uncategorized",
           subcategoryId: p.subcategory?.id ?? null,
           subcategoryName: p.subcategory?.name || null,
+          brandId: p.brand?.id ?? null,
+          brandName: p.brand?.name || null,
           image: p.image || null,
         }));
 
         if (isMounted) {
           setProducts(normalizedProducts);
           setCategories(catJson);
+          setBrands(brandJson);
         }
       } catch (e) {
         if (isMounted) setError(e.message || "Something went wrong");
@@ -86,6 +115,31 @@ function ProductList({ showSeeMore = false }) {
     };
   }, [selectedCategoryId]);
 
+  // Fetch subcategories for edit form when category changes
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchEditSubcategories() {
+      if (!editForm.category_id || editForm.category_id === "") {
+        setEditSubcategories([]);
+        return;
+      }
+      try {
+        const res = await fetch(`${BACKEND_BASE_URL}/api/categories/${editForm.category_id}/subcategories/`);
+        if (!res.ok) throw new Error("Failed to load subcategories");
+        const data = await res.json();
+        if (isMounted) {
+          setEditSubcategories(data);
+        }
+      } catch {
+        if (isMounted) setEditSubcategories([]);
+      }
+    }
+    fetchEditSubcategories();
+    return () => {
+      isMounted = false;
+    };
+  }, [editForm.category_id]);
+
   const filteredProducts = useMemo(() => {
     let list = products;
     if (selectedCategoryId !== "All") {
@@ -103,6 +157,151 @@ function ProductList({ showSeeMore = false }) {
     }
     return list;
   }, [products, selectedCategoryId, selectedSubcategoryId, search, showSeeMore]);
+
+  // Handle edit product
+  const handleEditProduct = (product) => {
+    setEditingProduct(product);
+    setEditForm({
+      name: product.name || "",
+      description: product.description || "",
+      price: product.price || "",
+      stock: product.stock || "",
+      category_id: product.categoryId || "",
+      subcategory_id: product.subcategoryId || "",
+      brand_id: product.brandId || "",
+      image: null
+    });
+  };
+
+  // Handle delete product
+  const handleDeleteProduct = (product) => {
+    setDeletingProduct(product);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    if (!deletingProduct) return;
+    
+    setDeleteLoading(true);
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/api/products/${deletingProduct.id}/delete/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setProducts(products.filter(p => p.id !== deletingProduct.id));
+        setDeletingProduct(null);
+      } else {
+        throw new Error('Failed to delete product');
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Handle form input changes
+  const handleFormChange = (e) => {
+    const { name, value, files } = e.target;
+    setEditForm(prev => ({
+      ...prev,
+      [name]: files ? files[0] : value,
+      // Reset subcategory when category changes
+      ...(name === 'category_id' && { subcategory_id: "" })
+    }));
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    setEditLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('description', editForm.description);
+      formData.append('price', editForm.price);
+      formData.append('stock', editForm.stock);
+      if (editForm.category_id) formData.append('category_id', editForm.category_id);
+      if (editForm.subcategory_id) formData.append('subcategory_id', editForm.subcategory_id);
+      if (editForm.brand_id) formData.append('brand_id', editForm.brand_id);
+      if (editForm.image) formData.append('image', editForm.image);
+
+      const response = await fetch(`${BACKEND_BASE_URL}/api/products/${editingProduct.id}/update/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProducts(products.map(p => 
+          p.id === editingProduct.id 
+            ? { 
+                ...p, 
+                name: updatedProduct.name,
+                description: updatedProduct.description || "",
+                price: Number(updatedProduct.price || 0),
+                stock: updatedProduct.stock || 0,
+                categoryId: updatedProduct.category?.id ?? null,
+                categoryName: updatedProduct.category?.name || "Uncategorized",
+                subcategoryId: updatedProduct.subcategory?.id ?? null,
+                subcategoryName: updatedProduct.subcategory?.name || null,
+                brandId: updatedProduct.brand?.id ?? null,
+                brandName: updatedProduct.brand?.name || null,
+                image: updatedProduct.image || p.image
+              }
+            : p
+        ));
+        setEditingProduct(null);
+        setEditForm({
+          name: "",
+          description: "",
+          price: "",
+          stock: "",
+          category_id: "",
+          subcategory_id: "",
+          brand_id: "",
+          image: null
+        });
+        setEditSubcategories([]);
+      } else {
+        throw new Error('Failed to update product');
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Close modals
+  const closeEditModal = () => {
+    setEditingProduct(null);
+    setEditForm({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      category_id: "",
+      subcategory_id: "",
+      brand_id: "",
+      image: null
+    });
+    setEditSubcategories([]);
+  };
+
+  const closeDeleteModal = () => {
+    setDeletingProduct(null);
+  };
 
   return (
     <section className="py-16 container mx-auto px-4">
@@ -217,6 +416,30 @@ function ProductList({ showSeeMore = false }) {
               <div className="absolute top-3 right-3 bg-white rounded-lg shadow-sm px-2 py-1 text-xs font-semibold text-blue-600">
                 {product.categoryName}
               </div>
+              
+              {/* Edit and Delete Icons for authenticated users */}
+              {isAuthenticated && (
+                <div className="absolute top-3 left-3 flex gap-2">
+                  <button
+                    onClick={() => handleEditProduct(product)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110"
+                    title="Edit Product"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteProduct(product)}
+                    className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110"
+                    title="Delete Product"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="p-4">
@@ -291,6 +514,194 @@ function ProductList({ showSeeMore = false }) {
               />
             </svg>
           </a>
+        </div>
+      )}
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={closeEditModal}>
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Edit Product</h3>
+                <button
+                  onClick={closeEditModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={editForm.name}
+                      onChange={handleFormChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={editForm.price}
+                      onChange={handleFormChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.01"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                    <input
+                      type="number"
+                      name="stock"
+                      value={editForm.stock}
+                      onChange={handleFormChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select
+                      name="category_id"
+                      value={editForm.category_id}
+                      onChange={handleFormChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(category => (
+                        <option key={category.id} value={category.id}>{category.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                    <select
+                      name="subcategory_id"
+                      value={editForm.subcategory_id}
+                      onChange={handleFormChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Subcategory</option>
+                      {editSubcategories.map(subcategory => (
+                        <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                    <select
+                      name="brand_id"
+                      value={editForm.brand_id}
+                      onChange={handleFormChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Brand</option>
+                      {brands.map(brand => (
+                        <option key={brand.id} value={brand.id}>{brand.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    name="description"
+                    value={editForm.description}
+                    onChange={handleFormChange}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={handleFormChange}
+                    accept="image/*"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    disabled={editLoading}
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    {editLoading ? 'Updating...' : 'Update Product'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingProduct && (
+        <div className="fixed inset-0  bg-opacity-10 flex items-center justify-center z-50 p-4" onClick={closeDeleteModal}>
+          <div className="bg-white rounded-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-lg font-medium text-gray-900">Delete Product</h3>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete "<strong>{deletingProduct.name}</strong>"? This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleteLoading}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  {deleteLoading ? 'Deleting...' : 'Yes, Delete'}
+                </button>
+                <button
+                  onClick={closeDeleteModal}
+                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>
