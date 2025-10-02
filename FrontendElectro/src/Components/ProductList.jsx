@@ -854,7 +854,7 @@ const ProductCard = ({ product,shop, isAuthenticated, onEdit, onDelete }) => (
           <a
             href={
                shop ? `https://wa.me/977${shop?.whatsapp}?text=${encodeURIComponent(
-                    `Hello Bishal Traders, I am interested in ${product?.name || ""}`
+                    `Hello ${shop?.name}, I am interested in ${product?.name || ""}`
                   )}` : "#"
             }
 
@@ -899,7 +899,7 @@ const ProductCard = ({ product,shop, isAuthenticated, onEdit, onDelete }) => (
           Call
         </a>
         <a
-          href={`https://wa.me/977${shop?.whatsapp}?text=Hello%20Bishal%20Traders,%20I%20am%20interested%20in%20${encodeURIComponent(product.name)}`}
+          href={`https://wa.me/977${shop?.whatsapp}?text=Hello ${shop?.name},%20I%20am%20interested%20in%20${encodeURIComponent(product.name)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
@@ -1005,7 +1005,7 @@ const ProductListItem = ({ product, shop,isAuthenticated, onEdit, onDelete }) =>
                 Call
               </a>
               <a
-                href={`https://wa.me/977${shop?.whatsapp}?text=Hello%20Bishal%20Traders,%20I%20am%20interested%20in%20${encodeURIComponent(product.name)}`}
+                href={`https://wa.me/977${shop?.whatsapp}?text=Hello%20${shop?.name},%20I%20am%20interested%20in%20${encodeURIComponent(product.name)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"

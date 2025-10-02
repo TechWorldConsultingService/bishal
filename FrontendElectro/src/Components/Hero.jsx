@@ -181,7 +181,6 @@ function Hero() {
               </Link>
 
               <a
-                // href="https://wa.me/9779763258057"
                 href={`https://wa.me/977${shop?.whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
