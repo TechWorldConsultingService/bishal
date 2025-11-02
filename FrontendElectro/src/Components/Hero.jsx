@@ -2,57 +2,75 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import alternatorMotor from "../assets/alternator_motor.jpg";
+import alternatorMotor1 from "../assets/alternator_motor1.jpg";
+import alternatorMotor2 from "../assets/alternator_motor2.jpg";
+import battery from "../assets/battery.jpg";
+import battery2 from "../assets/battery2.jpg";
+import invertor from "../assets/Invertor.jpg";
 
 function Hero() {
-  const baseURL  = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/";
+  const baseURL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/";
   const [banner, setBanner] = useState(null);
 
+  // Images for slider
+  const images = [alternatorMotor, alternatorMotor1, alternatorMotor2, battery, battery2, invertor];
+  const [currentImage, setCurrentImage] = useState(0);
+  const [fade, setFade] = useState(false);
+
   useEffect(() => {
-    // Fetch the hero banner from your backend
     axios
-      .get("http://localhost:8000/api/hero-banners/") // ✅ update this URL if needed
+      .get("http://localhost:8000/api/hero-banners/")
       .then((res) => {
         if (res.data.length > 0) {
-          setBanner(res.data[0]); // If you only have 1 banner, take the first one
+          setBanner(res.data[0]);
         }
       })
       .catch((err) => console.error("Error fetching hero banner:", err));
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(true);
+      setTimeout(() => {
+        setCurrentImage((prev) => (prev + 1) % images.length);
+        setFade(false);
+      }, 500); // fade duration
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
   return (
     <section className="relative py-6 md:py-14 overflow-hidden">
-      {/* ✅ Background with gradient */}
+      {/* ✅ Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 opacity-90"></div>
 
       {/* ✅ Background pattern */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48ZyBmaWxsPSJub25lIiBzdHJva2U9IiMwMDc3ZmYiIHN0cm9rZS13aWR0aD0iMC41IiBzdHJva2Utb3BhY2l0eT0iMC4yIj48cGF0aCBkPSJNIDAgMCBMIDYwIDYwIE0gNjAgMCBMIDAgNjAiLz48L2c+PC9zdmc+')] opacity-20"></div>
 
       <div className="container mx-auto text-center px-4 relative z-10">
-        {/* ✅ Banner image from backend */}
-        {banner?.image && (
-          <div className="inline-block p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6 shadow-2xl">
-            <div className="bg-white p-3 rounded-full flex items-center justify-center">
-              <img
-                // src={`http://localhost:8000/media/HeroSectionBanner/${banner.image}`}
-                src={`${baseURL}media/HeroSectionBanner/hero4.jpg`}
-                alt={banner.title || "Banner"}
-                className="h-28 w-28 md:h-40 md:w-40 rounded-full shadow-2xl border-4 border-blue-500 transition-transform duration-500 hover:scale-110 object-cover"
-              />
-            </div>
+        {/* ✅ Animated image slider */}
+        <div className="inline-block p-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-6 shadow-2xl">
+          <div className="bg-white p-1.5 rounded-2xl flex items-center justify-center">
+            <img
+              src={images[currentImage]}
+              alt="Hero Banner"
+              className={`h-48 w-full max-w-3xl object-cover rounded-xl shadow-2xl border-4 border-blue-500 transition-all duration-500 ${fade ? 'opacity-0' : 'opacity-100'}`}
+            />
           </div>
-        )}
+        </div>
 
-        {/* ✅ Dynamic Title */}
+        {/* ✅ Title */}
         <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-blue-700 to-purple-600 bg-clip-text text-transparent mt-2 mb-3">
           {banner?.title || "Welcome to Bishal Traders"}
         </h1>
 
-        {/* ✅ Dynamic Subtitle */}
+        {/* ✅ Subtitle */}
         <p className="text-base md:text-2xl text-gray-700 font-medium mb-4">
           {banner?.subtitle || "Your trusted Auto Electric Partner ⚡"}
         </p>
 
-        {/* ✅ Call-to-action */}
+        {/* ✅ CTA button */}
         <div className="mt-6">
           <Link
             to="/products"
@@ -62,7 +80,7 @@ function Hero() {
           </Link>
         </div>
 
-        {/* ✅ Contact Buttons */}
+        {/* ✅ Contact buttons */}
         <div className="mt-6 flex justify-center gap-4">
           <a
             href="tel:9763258057"
@@ -85,6 +103,7 @@ function Hero() {
 }
 
 export default Hero;
+
 
 
 
